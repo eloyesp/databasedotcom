@@ -862,35 +862,35 @@ describe Databasedotcom::Client do
         context "with proper fields" do
           context "with attributes from a JSON" do
             it "persists the updated changes" do
-              stub_request(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid").to_return(:body => nil, :status => 204)
+              stub_request(:post, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid?_HttpMethod=PATCH").to_return(:body => nil, :status => 204)
               @client.update("Whizbang", "rid", "{\"Name\":\"update\"}")
-              WebMock.should have_requested(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid")
+              WebMock.should have_requested(:post, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid?_HttpMethod=PATCH")
             end
           end
 
           context "with attributes from a hash" do
             it "persists the updated changes" do
-              stub_request(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid").to_return(:body => nil, :status => 204)
+              stub_request(:post, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid?_HttpMethod=PATCH").to_return(:body => nil, :status => 204)
               @client.update("Whizbang", "rid", {"Name" => "update"})
-              WebMock.should have_requested(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid")
+              WebMock.should have_requested(:post, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid?_HttpMethod=PATCH")
             end
 
             it "persists the updated changes with names as symbols" do
-              stub_request(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid").to_return(:body => nil, :status => 204)
+              stub_request(:post, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid?_HttpMethod=PATCH").to_return(:body => nil, :status => 204)
               @client.update("Whizbang", "rid", {:Name => "update"})
-              WebMock.should have_requested(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid")
+              WebMock.should have_requested(:post, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid?_HttpMethod=PATCH")
             end
             
             it "applies type coercions before serializing" do
-              stub_request(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid").to_return(:body => nil, :status => 204)
+              stub_request(:post, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid?_HttpMethod=PATCH").to_return(:body => nil, :status => 204)
               @client.update("Whizbang", "rid", "Date_Field" => Date.civil(2011, 1, 1), "DateTime_Field" => DateTime.civil(2011, 2, 1, 12), "Picklist_Multiselect_Field" => %w(a b))
-              WebMock.should have_requested(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid").with(:body => {"Date_Field" => "2011-01-01", "DateTime_Field" => "2011-02-01T12:00:00.000+0000", "Picklist_Multiselect_Field" => "a;b"})
+              WebMock.should have_requested(:post, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid?_HttpMethod=PATCH").with(:body => {"Date_Field" => "2011-01-01", "DateTime_Field" => "2011-02-01T12:00:00.000+0000", "Picklist_Multiselect_Field" => "a;b"})
             end
 
             it "applies type coercions with Dates represented as Strings" do
-              stub_request(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid").to_return(:body => nil, :status => 204)
+              stub_request(:post, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid?_HttpMethod=PATCH").to_return(:body => nil, :status => 204)
               @client.update("Whizbang", "rid", "Date_Field" => Date.civil(2011, 1, 1).to_s, "DateTime_Field" => DateTime.civil(2011, 2, 1, 12).to_s, "Picklist_Multiselect_Field" => %w(a b))
-              WebMock.should have_requested(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid").with(:body => {"Date_Field" => "2011-01-01", "DateTime_Field" => "2011-02-01T12:00:00.000+0000", "Picklist_Multiselect_Field" => "a;b"})
+              WebMock.should have_requested(:post, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid?_HttpMethod=PATCH").with(:body => {"Date_Field" => "2011-01-01", "DateTime_Field" => "2011-02-01T12:00:00.000+0000", "Picklist_Multiselect_Field" => "a;b"})
             end
           end
         end
@@ -898,7 +898,7 @@ describe Databasedotcom::Client do
         context "with improper fields" do
           before do
             @response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/sobject/write_error_response.json"))
-            stub_request(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid").to_return(:body => @response_body, :status => 400)
+            stub_request(:post, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/rid?_HttpMethod=PATCH").to_return(:body => @response_body, :status => 400)
           end
 
           it "raises an Databasedotcom::SalesForceError" do
@@ -914,25 +914,25 @@ describe Databasedotcom::Client do
           context "with a non-existent external id" do
             it "creates a new record with the external id and the specified attributes" do
               @response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/sobject/upsert_created_success_response.json"))
-              stub_request(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/Name/somename").to_return(:body => @response_body, :status => 201)
+              stub_request(:post, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/Name/somename?_HttpMethod=PATCH").to_return(:body => @response_body, :status => 201)
               @client.upsert("Whizbang", "Name", "somename", "Name" => "newname")
-              WebMock.should have_requested(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/Name/somename").with(:body => %|{"Name":"newname"}|)
+              WebMock.should have_requested(:post, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/Name/somename?_HttpMethod=PATCH").with(:body => %|{"Name":"newname"}|)
             end
           end
 
           context "with an existing external id" do
             it "updates attributes in the existing object" do
               @response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/sobject/upsert_updated_success_response.json"))
-              stub_request(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/Name/somename").to_return(:body => @response_body, :status => 201)
+              stub_request(:post, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/Name/somename?_HttpMethod=PATCH").to_return(:body => @response_body, :status => 201)
               @client.upsert("Whizbang", "Name", "somename", "Name" => "newname")
-              WebMock.should have_requested(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/Name/somename").with(:body => %|{"Name":"newname"}|)
+              WebMock.should have_requested(:post, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/Name/somename?_HttpMethod=PATCH").with(:body => %|{"Name":"newname"}|)
             end
           end
 
           context "with multiple choice" do
             before do
               @response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/sobject/upsert_multiple_error_response.json"))
-              stub_request(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/Name/ambiguous").to_return(:body => @response_body, :status => 300)
+              stub_request(:post, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/Name/ambiguous?_HttpMethod=PATCH").to_return(:body => @response_body, :status => 300)
             end
 
             it "raises an Databasedotcom::SalesForceError" do
@@ -946,7 +946,7 @@ describe Databasedotcom::Client do
         context "with an invalid external field" do
           before do
             @response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/sobject/upsert_error_response.json"))
-            stub_request(:patch, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/Namez/fakename").to_return(:body => @response_body, :status => 404)
+            stub_request(:post, "https://na1.salesforce.com/services/data/v23.0/sobjects/Whizbang/Namez/fakename?_HttpMethod=PATCH").to_return(:body => @response_body, :status => 404)
           end
 
           it "raises an Databasedotcom::SalesForceError" do
@@ -1162,25 +1162,25 @@ describe Databasedotcom::Client do
 
     describe "#http_patch" do
       it "upserts the data to the specified path" do
-        stub_request(:patch, "https://na1.salesforce.com/my/path").to_return(:body => "", :status => 201)
+        stub_request(:post, "https://na1.salesforce.com/my/path?_HttpMethod=PATCH").to_return(:body => "", :status => 201)
         @client.http_patch("/my/path", "data")
-        WebMock.should have_requested(:patch, "https://na1.salesforce.com/my/path").with(:data => "data")
+        WebMock.should have_requested(:post, "https://na1.salesforce.com/my/path?_HttpMethod=PATCH").with(:data => "data")
       end
 
       it "puts parameters into the path" do
-        stub_request(:patch, "https://na1.salesforce.com/my/path?foo=bar&bro=baz%20bap").to_return(:body => "", :status => 201)
+        stub_request(:post, "https://na1.salesforce.com/my/path?foo=bar&bro=baz%20bap&_HttpMethod=PATCH").to_return(:body => "", :status => 201)
         @client.http_patch("/my/path", "data", :foo => "bar", "bro" => "baz bap")
-        WebMock.should have_requested(:patch, "https://na1.salesforce.com/my/path?foo=bar&bro=baz%20bap")
+        WebMock.should have_requested(:post, "https://na1.salesforce.com/my/path?foo=bar&bro=baz%20bap&_HttpMethod=PATCH")
       end
 
       it "includes the headers in the request" do
-        stub_request(:patch, "https://na1.salesforce.com/my/path").to_return(:body => "", :status => 201)
+        stub_request(:post, "https://na1.salesforce.com/my/path?_HttpMethod=PATCH").to_return(:body => "", :status => 201)
         @client.http_patch("/my/path", "data", nil, {"Something" => "Header"})
-        WebMock.should have_requested(:patch, "https://na1.salesforce.com/my/path").with(:headers => {"Something" => "Header"})
+        WebMock.should have_requested(:post, "https://na1.salesforce.com/my/path?_HttpMethod=PATCH").with(:headers => {"Something" => "Header"})
       end
 
       it "raises SalesForceError" do
-        stub_request(:patch, "https://na1.salesforce.com/my/path").to_return(:body => "", :status => 400)
+        stub_request(:post, "https://na1.salesforce.com/my/path?_HttpMethod=PATCH").to_return(:body => "", :status => 400)
         lambda {
           @client.http_patch("/my/path", "data", nil, {"Something" => "Header"})
         }.should raise_error(Databasedotcom::SalesForceError)
