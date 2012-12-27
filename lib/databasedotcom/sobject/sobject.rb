@@ -32,7 +32,7 @@ module Databasedotcom
           hash
         end
       end
-      
+
       # Set attributes of this object, from a hash, in bulk
       def attributes=(attrs)
         attrs.each do |key, value|
@@ -104,8 +104,8 @@ module Databasedotcom
         selection_attr = self.Id.nil? ? "createable" : "updateable"
         self.class.description["fields"].select { |f| f[selection_attr] }.collect { |f| f["name"] }.each { |attr| attr_hash[attr] = self.send(attr) }
 
-        # allow fields to be removed on a case by case basis as some data is not allowed to be saved 
-        # (e.g. Name field on Account with record type of Person Account) despite the API listing 
+        # allow fields to be removed on a case by case basis as some data is not allowed to be saved
+        # (e.g. Name field on Account with record type of Person Account) despite the API listing
         # some fields as editable
         if options[:exclusions] and options[:exclusions].respond_to?(:include?) then
           attr_hash.delete_if { |key, value| options[:exclusions].include?(key.to_s) }
@@ -180,6 +180,12 @@ module Databasedotcom
           end
 
         end
+
+        self.description["childRelationships"].each do |relationship|
+          relationship_name = relationship["relationshipName"]
+          attr_accessor relationship_name.to_sym if relationship_name
+        end
+
       end
 
       # Returns the Force.com type of the attribute +attr_name+. Raises ArgumentError if attribute does not exist.

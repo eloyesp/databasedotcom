@@ -444,6 +444,17 @@ module Databasedotcom
 
         # Field not found
         if field == nil
+          relationship = new_record.description['childRelationships'].find do |relationship|
+            relationship["relationshipName"] == name
+          end
+
+          if relationship
+            childs = value["records"].collect do |child|
+              record_from_hash( child )
+            end
+            set_value( new_record, relationship["relationshipName"], childs, :child_relationship )
+          end
+
           break
         end
 
