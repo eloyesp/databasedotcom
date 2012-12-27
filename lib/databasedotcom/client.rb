@@ -448,8 +448,8 @@ module Databasedotcom
             relationship["relationshipName"] == name
           end
 
-          if relationship
-            childs = value["records"].collect do |child|
+          if relationship && value && records = value["records"]
+            childs = records.collect do |child|
               record_from_hash( child )
             end
             set_value( new_record, relationship["relationshipName"], childs, :child_relationship )
