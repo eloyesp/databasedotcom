@@ -437,24 +437,16 @@ module Databasedotcom
     def record_from_hash(data)
       attributes = data.delete('attributes')
       new_record = find_or_materialize(attributes["type"]).new
+      possible_fields = new_record.description['fields'] + new_record.description['childRelationships']
+
       data.each do |name, value|
-        field = new_record.description['fields'].find do |field|
+        field = possible_fields.find do |field|
           key_from_label(field["label"]) == name || field["name"] == name || field["relationshipName"] == name
         end
 
-        # Field not found, check for parent-to-child associations
+        # Field not found
         if field == nil
-          break unless value.is_a?(Hash) && value["records"]
-
-          # if value is hash and has "records"
-          # then it's an association
-          begin
-            new_record.class.register_field name, {:type => "reference", :label => name}
-            field = {}
-            value = collection_from_hash(value)
-          rescue Databasedotcom::SalesForceError
-            break
-          end
+          break
         end
 
         # If reference/lookup field data was fetched, recursively build the child record and apply
@@ -464,6 +456,8 @@ module Databasedotcom
         # If the value is a collection, set the association on the record
         elsif value.is_a?(Databasedotcom::Collection)
           set_value( new_record, name, value, 'reference' )
+        # Nil values has no sence here
+        elsif value.nil?
         # Apply the raw value for all other field types
         else
           set_value(new_record, field["name"], value, field["type"]) if field
@@ -533,7 +527,7 @@ module Databasedotcom
     end
 
     def key_from_label(label)
-      label.gsub(' ', '_')
+      label.gsub(' ', '_') unless label.nil?
     end
 
     def user_and_pass?(options)
@@ -562,3 +556,4 @@ module Databasedotcom
     end
   end
 end
+
