@@ -453,9 +453,14 @@ module Databasedotcom
         if value.is_a?(Hash) and field['type'] == 'reference' and field["relationshipName"]
           relation = record_from_hash( value )
           set_value( new_record, field["relationshipName"], relation, 'reference' )
-        # If the value is a collection, set the association on the record
-        elsif value.is_a?(Databasedotcom::Collection)
-          set_value( new_record, name, value, 'reference' )
+        # build child records
+        elsif value.is_a?(Hash) and field['childSObject'] and field["relationshipName"]
+          begin
+            childs = collection_from_hash(value)
+          rescue Databasedotcom::SalesForceError
+            break
+          end
+          set_value( new_record, field["relationshipName"], relation, 'reference' )
         # Nil values has no sence here
         elsif value.nil?
         # Apply the raw value for all other field types
