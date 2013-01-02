@@ -460,7 +460,7 @@ module Databasedotcom
           rescue Databasedotcom::SalesForceError
             break
           end
-          set_value( new_record, field["relationshipName"], relation, 'reference' )
+          set_value( new_record, field["relationshipName"], childs, 'reference' )
         # Nil values has no sence here
         elsif value.nil?
         # Apply the raw value for all other field types

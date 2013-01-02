@@ -1221,6 +1221,12 @@
     "cascadeDelete" : true,
     "childSObject" : "ContentDocumentLink"
   }, {
+    "field" : "WhizbangId",
+    "deprecatedAndHidden" : false,
+    "relationshipName" : "Customers",
+    "cascadeDelete" : true,
+    "childSObject" : "Whizbang"
+  }, {
     "field" : "FirstPublishLocationId",
     "deprecatedAndHidden" : false,
     "relationshipName" : null,
