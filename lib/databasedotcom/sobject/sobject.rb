@@ -80,13 +80,11 @@ module Databasedotcom
       #    c = Car.new
       #    c.update_attributes {"Color" => "Blue", "Year" => "2012"}
       def update_attributes(new_attrs)
-        if self.client.update(self.class, self.Id, new_attrs)
-          new_attrs = new_attrs.is_a?(Hash) ? new_attrs : JSON.parse(new_attrs)
-          new_attrs.each do |attr, value|
-            self.send("#{attr}=", value)
-          end
+        new_attrs = new_attrs.is_a?(Hash) ? new_attrs : JSON.parse(new_attrs)
+        new_attrs.each do |attr, value|
+          self.send("#{attr}=", value)
         end
-        self
+        save
       end
 
       # Updates the corresponding record on Force.com with the attributes of self.
