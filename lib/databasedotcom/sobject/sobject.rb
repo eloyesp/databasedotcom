@@ -84,7 +84,8 @@ module Databasedotcom
         new_attrs.each do |attr, value|
           self.send("#{attr}=", value)
         end
-        save
+        self.client.update(self.class, self.Id, new_attrs)
+        self
       end
 
       # Updates the corresponding record on Force.com with the attributes of self.
