@@ -331,6 +331,83 @@ describe Databasedotcom::Client do
       @client.authenticate(:token => "foo", :instance_url => "https://na1.salesforce.com")
     end
 
+    describe "#refresh_oauth_token" do
+
+      context "with a refresh token" do
+        before do
+          @client.refresh_token = "refresh"
+        end
+
+        after do
+          @client.refresh_token = nil
+        end
+
+        context "when the refresh token flow succeeds" do
+          before do
+            response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/refresh_success_response.json"))
+            stub_request(:post, "https://bro.baz/services/oauth2/token?client_id=client_id&client_secret=client_secret&grant_type=refresh_token&refresh_token=refresh").to_return(:body => response_body, :status => 200)
+          end
+
+          it "stores the new access token" do
+            @client.refresh_oauth_token
+            @client.oauth_token.should == "refreshed_access_token"
+          end
+
+        end
+
+        context "when the refresh token flow fails" do
+          before do
+            response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/refresh_error_response.json"))
+            stub_request(:post, "https://bro.baz/services/oauth2/token?client_id=client_id&client_secret=client_secret&grant_type=refresh_token&refresh_token=refresh").to_return(:body => response_body, :status => 400)
+          end
+
+          it "raises SalesForceError" do
+            lambda {
+              @client.refresh_oauth_token
+            }.should raise_error(Databasedotcom::SalesForceError)
+          end
+        end
+      end
+
+      context "with a username and password" do
+        before do
+          @client.username = "username"
+          @client.password = "password"
+        end
+
+        after do
+          @client.username = @client.password = nil
+        end
+
+        context "when reauthentication succeeds" do
+          before do
+            response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/reauth_success_response.json"))
+            stub_request(:post, "https://bro.baz/services/oauth2/token?client_id=client_id&client_secret=client_secret&grant_type=password&username=username&password=password").to_return(:body => response_body, :status => 200)
+          end
+
+          it "stores the new access token" do
+            @client.refresh_oauth_token
+            @client.oauth_token.should == "new_access_token"
+          end
+
+        end
+
+        context "when reauthentication fails" do
+          before do
+            response_body = File.read(File.join(File.dirname(__FILE__), "../fixtures/auth_error_response.json"))
+            stub_request(:post, "https://bro.baz/services/oauth2/token?client_id=client_id&client_secret=client_secret&grant_type=password&username=username&password=password").to_return(:body => response_body, :status => 400)
+          end
+
+          it "raises SalesForceError" do
+            lambda {
+              @client.refresh_oauth_token
+            }.should raise_error(Databasedotcom::SalesForceError)
+          end
+        end
+      end
+
+    end
+
     describe "#list_sobjects" do
       context "with a successful request" do
         before do

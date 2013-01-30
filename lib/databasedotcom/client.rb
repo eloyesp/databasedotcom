@@ -137,6 +137,29 @@ module Databasedotcom
       @org_id ||= query_org_id # lazy query org_id when not set by login response
     end
 
+    # Gets a new oauth token.
+    def refresh_oauth_token
+      if self.refresh_token
+        response = with_encoded_path_and_checked_response("/services/oauth2/token", { :grant_type => "refresh_token", :refresh_token => self.refresh_token, :client_id => self.client_id, :client_secret => self.client_secret}, :host => self.host) do |encoded_path|
+          response = https_request(self.host).post(encoded_path, nil)
+          if response.is_a?(Net::HTTPOK)
+            parse_auth_response(response.body)
+          end
+          response
+        end
+      elsif self.username && self.password
+        response = with_encoded_path_and_checked_response("/services/oauth2/token", { :grant_type => "password", :username => self.username, :password => self.password, :client_id => self.client_id, :client_secret => self.client_secret}, :host => self.host) do |encoded_path|
+          response = https_request(self.host).post(encoded_path, nil)
+          if response.is_a?(Net::HTTPOK)
+            parse_auth_response(response.body)
+          end
+          response
+        end
+      end
+
+      response.is_a?(Net::HTTPSuccess)
+    end
+
     # Returns an Array of Strings listing the class names for every type of _Sobject_ in the database. Raises SalesForceError if an error occurs.
     def list_sobjects
       result = http_get("/services/data/v#{self.version}/sobjects")
@@ -350,25 +373,7 @@ module Databasedotcom
 
       unless response.is_a?(expected_result_class || Net::HTTPSuccess)
         if response.is_a?(Net::HTTPUnauthorized)
-          if self.refresh_token
-            response = with_encoded_path_and_checked_response("/services/oauth2/token", { :grant_type => "refresh_token", :refresh_token => self.refresh_token, :client_id => self.client_id, :client_secret => self.client_secret}, :host => self.host) do |encoded_path|
-              response = https_request(self.host).post(encoded_path, nil)
-              if response.is_a?(Net::HTTPOK)
-                parse_auth_response(response.body)
-              end
-              response
-            end
-          elsif self.username && self.password
-            response = with_encoded_path_and_checked_response("/services/oauth2/token", { :grant_type => "password", :username => self.username, :password => self.password, :client_id => self.client_id, :client_secret => self.client_secret}, :host => self.host) do |encoded_path|
-              response = https_request(self.host).post(encoded_path, nil)
-              if response.is_a?(Net::HTTPOK)
-                parse_auth_response(response.body)
-              end
-              response
-            end
-          end
-
-          if response.is_a?(Net::HTTPSuccess)
+          if self.refresh_oauth_token
             response = yield
           end
         end
