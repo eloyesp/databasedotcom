@@ -3,6 +3,9 @@ require 'json'
 require 'net/http/post/multipart'
 require 'date'
 
+# A URL greater than 8192 will not be accepted by Salesforce
+MAX_PATH_LENGTH = 8192
+
 module Databasedotcom
   # Interface for operating the Force.com REST API
   class Client
@@ -309,7 +312,7 @@ module Databasedotcom
     # HTTPSuccess- raises SalesForceError otherwise.
     def http_get(path, parameters={}, headers={})
       with_encoded_path_and_checked_response(path, parameters) do |encoded_path|
-        https_request.get(encoded_path, {"Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
+        https_request.get(encoded_path, common_headers.merge(headers))
       end
     end
 
@@ -319,7 +322,7 @@ module Databasedotcom
     # HTTPSuccess- raises SalesForceError otherwise.
     def http_delete(path, parameters={}, headers={})
       with_encoded_path_and_checked_response(path, parameters, {:expected_result_class => Net::HTTPNoContent}) do |encoded_path|
-        https_request.delete(encoded_path, {"Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
+        https_request.delete(encoded_path, common_headers(headers))
       end
     end
 
@@ -328,7 +331,7 @@ module Databasedotcom
     # headers specified in _headers_.  Returns the HTTPResult if it is of type HTTPSuccess- raises SalesForceError otherwise.
     def http_post(path, data=nil, parameters={}, headers={})
       with_encoded_path_and_checked_response(path, parameters, {:data => data}) do |encoded_path|
-        https_request.post(encoded_path, data, {"Content-Type" => data ? "application/json" : "text/plain", "Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
+        https_request.post(encoded_path, data, common_headers(headers,{"Content-Type" => data ? "application/json" : "text/plain"}))
       end
     end
 
@@ -337,7 +340,7 @@ module Databasedotcom
     # headers specified in _headers_.  Returns the HTTPResult if it is of type HTTPSuccess- raises SalesForceError otherwise.
     def http_patch(path, data=nil, parameters={}, headers={})
       with_encoded_path_and_checked_response(path, parameters, {:data => data}) do |encoded_path|
-        https_request.send_request("PATCH", encoded_path, data, {"Content-Type" => data ? "application/json" : "text/plain", "Authorization" => "OAuth #{self.oauth_token}"}.merge(headers))
+        https_request.send_request("PATCH", encoded_path, data, common_headers(headers, {"Content-Type" => data ? "application/json" : "text/plain"}))
       end
     end
 
@@ -347,7 +350,7 @@ module Databasedotcom
     # Returns the HTTPResult if it is of type HTTPSuccess- raises SalesForceError otherwise.
     def http_multipart_post(path, parts, parameters={}, headers={})
       with_encoded_path_and_checked_response(path, parameters) do |encoded_path|
-        https_request.request(Net::HTTP::Post::Multipart.new(encoded_path, parts, {"Authorization" => "OAuth #{self.oauth_token}"}.merge(headers)))
+        https_request.request(Net::HTTP::Post::Multipart.new(encoded_path, parts, common_headers(headers)))
       end
     end
 
@@ -363,7 +366,7 @@ module Databasedotcom
 
     def with_logging(encoded_path, options)
       log_request(encoded_path, options)
-      response = yield encoded_path
+      response = decompress(yield encoded_path)
       log_response(response)
       response
     end
@@ -391,9 +394,14 @@ module Databasedotcom
         http.verify_mode = self.verify_mode if self.verify_mode
       end
     end
-
+    
     def encode_path_with_params(path, parameters={})
-      [URI.escape(path), encode_parameters(parameters)].reject{|el| el.empty?}.join('?')
+      check_path_length([URI.escape(path), encode_parameters(parameters)].reject{|el| el.empty?}.join('?'))
+    end
+
+    def check_path_length(path) # SF won't accept URL paths > 8192 chars, this is a HTTP default limitation
+      raise Databasedotcom::MaxPathLengthError.new(path) if path.length > MAX_PATH_LENGTH
+      path
     end
 
     def encode_parameters(parameters={})
@@ -564,6 +572,28 @@ module Databasedotcom
     def const_defined_in_module(mod, const)
       mod.method(:const_defined?).arity == 1 ? mod.const_defined?(const) : mod.const_defined?(const, false)
     end
+    
+    def common_headers(*additional_headers)
+      base_headers = {"Authorization" => "OAuth #{self.oauth_token}", "Accept-Encoding" => "gzip"}  #
+      additional_headers.each{|h| base_headers.merge!(h)} if additional_headers
+      base_headers
+    end
+
+    def decompress(result)
+      if result['content-encoding'] == 'gzip'
+        begin
+          original_size = result.body.length
+          i = Zlib::GzipReader.new(StringIO.new(result.body))
+          result.instance_variable_set(:@body, i.read)
+          #puts "Result body was compressed #{100.0*(result.body.length - original_size)/result.body.length}%"
+        rescue Zlib::GzipFile::Error
+         end
+      end
+      result
+    end
+    
   end
+  
+  
 end
 
