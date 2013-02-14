@@ -394,7 +394,7 @@ module Databasedotcom
         http.verify_mode = self.verify_mode if self.verify_mode
       end
     end
-    
+
     def encode_path_with_params(path, parameters={})
       check_path_length([URI.escape(path), encode_parameters(parameters)].reject{|el| el.empty?}.join('?'))
     end
@@ -572,7 +572,7 @@ module Databasedotcom
     def const_defined_in_module(mod, const)
       mod.method(:const_defined?).arity == 1 ? mod.const_defined?(const) : mod.const_defined?(const, false)
     end
-    
+
     def common_headers(*additional_headers)
       base_headers = {"Authorization" => "OAuth #{self.oauth_token}", "Accept-Encoding" => "gzip"}  #
       additional_headers.each{|h| base_headers.merge!(h)} if additional_headers
@@ -591,9 +591,9 @@ module Databasedotcom
       end
       result
     end
-    
+
   end
-  
-  
+
+
 end
 

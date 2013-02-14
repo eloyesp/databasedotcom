@@ -47,9 +47,17 @@ describe Databasedotcom::Sobject::Sobject do
 
         describe "default values" do
           response["fields"].each do |f|
-            if f['type'] =~ /(picklist|multipicklist)/ && picklist_option = f['picklistValues'].find { |p| p['defaultValue'] }
+            if f['type'] == "picklist" && picklist_option = f['picklistValues'].find { |p| p['defaultValue'] }
               it "sets #{f['name']} to #{picklist_option['value']}" do
                 @sobject.send(f['name'].to_sym).should == picklist_option['value']
+              end
+            elsif f['type'] == "multipicklist" && picklist_options = f['picklistValues'].select { |p| p['defaultValue'] }
+              it "sets #{f['name']} to the default values" do
+                value = @sobject.send(f['name'].to_sym)
+                value.should be_kind_of Array
+                picklist_options.map { |po| po['value'] }.each do |default_value|
+                  value.should include(default_value)
+                end
               end
             elsif f['type'] =~ /boolean/
               it "sets #{f['name']} to #{f['defaultValue']}" do
@@ -583,18 +591,18 @@ describe Databasedotcom::Sobject::Sobject do
             attrs.include?("OwnerId").should be_true
             @obj_double
           end
-          
+
           @obj.save(:exclusions => ["Name"])
         end
-        
+
         it "remove any listed fields from the attributes on update" do
           @obj.Id = "foo"
-          
+
           @client.should_receive(:update) do |clazz, id, attrs|
             attrs.include?("Name").should be_false
             attrs.include?("OwnerId").should be_true
           end
-          
+
           result = @obj.save(:exclusions => ["Name"])
         end
       end
