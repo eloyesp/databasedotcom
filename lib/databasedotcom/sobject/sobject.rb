@@ -16,10 +16,12 @@ module Databasedotcom
       def initialize(attrs = {})
         super()
         self.class.description["fields"].each do |field|
-          if field['type'] == "picklist" && picklist_option = field['picklistValues'].find { |p| p['defaultValue'] }
-            self.send("#{field["name"]}=", picklist_option["value"])
-          elsif field['type'] == "multipicklist" && picklist_defaults = field['picklistValues'].select { |p| p['defaultValue'] }
-            self.send("#{field["name"]}=", picklist_defaults.map { |picklist| picklist["value"] })
+          if field['type'] == "picklist"
+            default = field['picklistValues'].find { |p| p['defaultValue'] }
+            self.send("#{field["name"]}=", default["value"]) if default
+          elsif field['type'] == "multipicklist"
+            defaults = field['picklistValues'].select { |p| p['defaultValue'] }
+            self.send("#{field["name"]}=", defaults.map { |picklist| picklist["value"] }) unless defaults.empty?
           elsif field['type'] =~ /boolean/
             self.send("#{field["name"]}=", field["defaultValue"])
           else
