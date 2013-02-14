@@ -1162,7 +1162,7 @@
     "dependentPicklist" : false,
     "writeRequiresMasterRead" : false,
     "sortable" : true
-  }, {    
+  }, {
     "name" : "ParentWhizbang__c",
     "type" : "reference",
     "defaultValue" : null,
@@ -1171,7 +1171,7 @@
     "calculated" : false,
     "controllerName" : null,
     "nillable" : true,
-    "unique" : false,    
+    "unique" : false,
     "inlineHelpText" : null,
     "nameField" : false,
     "externalId" : false,

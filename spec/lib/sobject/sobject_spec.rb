@@ -591,18 +591,18 @@ describe Databasedotcom::Sobject::Sobject do
             attrs.include?("OwnerId").should be_true
             @obj_double
           end
-          
+
           @obj.save(:exclusions => ["Name"])
         end
-        
+
         it "remove any listed fields from the attributes on update" do
           @obj.Id = "foo"
-          
+
           @client.should_receive(:update) do |clazz, id, attrs|
             attrs.include?("Name").should be_false
             attrs.include?("OwnerId").should be_true
           end
-          
+
           result = @obj.save(:exclusions => ["Name"])
         end
       end
