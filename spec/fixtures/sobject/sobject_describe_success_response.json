@@ -808,6 +808,12 @@
     "digits" : 0,
     "groupable" : false,
     "picklistValues" : [ {
+      "value" : "default",
+      "active" : true,
+      "label" : "default",
+      "defaultValue" : true,
+      "validFor" : null
+    }, {
       "value" : "four",
       "active" : true,
       "label" : "four",
