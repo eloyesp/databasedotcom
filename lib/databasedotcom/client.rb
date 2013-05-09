@@ -339,8 +339,10 @@ module Databasedotcom
     # Query parameters are included from _parameters_.  The required +Authorization+ header is automatically included, as are any additional
     # headers specified in _headers_.  Returns the HTTPResult if it is of type HTTPSuccess- raises SalesForceError otherwise.
     def http_patch(path, data=nil, parameters={}, headers={})
+      parameters ||= {}
+      parameters["_HttpMethod"] = "PATCH"
       with_encoded_path_and_checked_response(path, parameters, {:data => data}) do |encoded_path|
-        https_request.send_request("PATCH", encoded_path, data, common_headers(headers, {"Content-Type" => data ? "application/json" : "text/plain"}))
+        https_request.send_request("POST", encoded_path, data, common_headers(headers, {"Content-Type" => data ? "application/json" : "text/plain"}))
       end
     end
 
